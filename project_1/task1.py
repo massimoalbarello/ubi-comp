@@ -29,7 +29,7 @@ for key in data:
 ax[0].legend(loc='lower right')
 ax[0].set_title("Raw data")
 
-# Compute  and plot smoothed gradient
+# Compute and plot smoothed gradient
 derivatives={}
 for key in data:
     derivatives[key]= utils.butter_lowpass_filter(np.gradient(data[key]), cutoff, fs)
@@ -91,7 +91,7 @@ for key in derivatives:
 # Temporary way: only fix wrist array
 peaks["wrist"]=peaks["wrist"][2:]
 
-# Add peaks to smoother derivative plot
+# Add peaks to smoothed derivative plot
 for key in derivatives: 
     ax[1].scatter(peaks[key], derivatives[key][peaks[key]], marker ='x')
 
