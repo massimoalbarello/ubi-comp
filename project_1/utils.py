@@ -1,12 +1,15 @@
 import matplotlib.pyplot as plt
 
-def displayData(data):
+def displayData(data, lineV, lineH):
     fig, ax = plt.subplots()
     for key in data:
         ax.plot(data[key], label=key)
     ax.legend(loc='lower right')
     ax.set_title('Raw data')
-    plt.axhline(y=6600000, color='r', linestyle='-')    # Jungfraujoch has air pressure around 660 hPa
+    for index in lineV:
+        plt.axvline(x=index, color='black', linestyle='dotted')
+    for height in lineH:
+        plt.axhline(y=height, color='r', linestyle='-')    # Jungfraujoch has air pressure around 660 hPa
     plt.show()
 
 def derivate(data, dx):
