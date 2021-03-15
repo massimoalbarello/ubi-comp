@@ -17,6 +17,12 @@ import utils
 cutoff = 1000
 fs = 300000
 
+# Data fmeasured at 3571 m
+reference_pressure=np.genfromtxt('jungfraujoch_pressure.csv',
+                           dtype=float,
+                           delimiter=',',
+                           skip_header=1)
+
 # Load data
 # .item() is needed as np.load() returns a structured array that needs
 # to be converted back to a dict. File should be in same location as code.
@@ -55,8 +61,12 @@ shortest_log, total_duration =  min(log_length.items())
 # Plateau array: start peak, end peak, average pressure 
 points , plateau = utils.find_plateaux(data[shortest_log], derivatives[shortest_log])
 
-# choose threshold from plateau: highest value under reference 
-reference = 6700000.0
+# Choose threshold from plateau: highest value of air pressure measured in the time interval
+# The air pressure is measured at 3571m but the tourist area is at 3,463 m 
+# so we need to add a buffer to account for these 100m.
+# From the data the difference between the lowest plateau and the other ones is ~100000
+
+reference = np.amax(reference_pressure[:,1]) + 100000.0
 Jungfrau_duration = 0 
 
 for start, end, average in plateau:
@@ -128,9 +138,34 @@ ax[2].set_title("Synced data")
 ##                QUESTION 1.3                  ##
 ##################################################
 
+print("-----------")
+print("Question 1.3 :")
+print("-----------")
+
+##################################################
+##                QUESTION 2.1                  ##
+##################################################
+
+# The pressure at the Observatory is the closest to the pressure measured by official authorities
+# In our case it is the average of the the lowest plateau across all sensors
+pressure_at_observatory =0
+for key in data:
+    points , plateau = utils.find_plateaux(data[key], derivatives[key])
+    pressure_at_observatory += np.amin(plateau[:,2])/4.0
+
+# find nearest neighbour in reference array 
+index = (np.abs(reference_pressure[:,1]-pressure_at_observatory)).argmin()
+
+print("-----------")
+print("Question 2.1 :")
+print("-----------")
+print(f"Average pressure at observatory: %.2f " % pressure_at_observatory)
+print(f"Nearest reference pressure: %.2f" %  reference_pressure[index,1] )
+print(f"The subject visited Jungfraujoch on %d december" %reference_pressure[index,0])
+
 plt.savefig('plot.png')
-plt.tight_layout()
-plt.show()
+# plt.tight_layout()
+# plt.show()
 
 
 
