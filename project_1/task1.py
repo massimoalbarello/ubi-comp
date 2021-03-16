@@ -68,7 +68,7 @@ points , plateau = utils.find_plateaux(data[shortest_log], derivatives[shortest_
 
 reference = np.amax(reference_pressure[:,1]) + 100000.0
 Jungfrau_duration = 0 
-
+up_there =np.zeros((0,1))
 for start, end, average in plateau:
     if average<reference:
         Jungfrau_duration += end - start
@@ -76,6 +76,8 @@ for start, end, average in plateau:
         ax[2].plot(start, average, marker='|', markersize= 12, color ='k')
         ax[2].plot(np.arange(start, end), np.ones((int(end-start)))*(average-100000),linestyle="dashed", color = 'k' , label = "At Jungfrau" )
         ax[2].plot(end, average, marker='|', markersize= 12, color ='k')
+
+        up_there=np.vstack((up_there, average))
 
 time_up_there= 100.0 * Jungfrau_duration/total_duration
 
@@ -92,32 +94,46 @@ print(f"Portion of trip spent in Jungfrau: %.2f %%" % time_up_there )
 ##                QUESTION 1.2                  ##
 ##################################################
 
-# Find peaks on the smoothed gradient
-peaks={}
-for key in derivatives: 
-    peaks[key]=  utils.sorted_peaks(derivatives[key])
+# # Find peaks on the smoothed gradient
+# peaks={}
+# for key in derivatives: 
+#     peaks[key]=  utils.sorted_peaks(derivatives[key])
 
-# TODO: implement a nearest neighbour peak filtering
-# Temporary way: only fix wrist array
-peaks["wrist"]=peaks["wrist"][2:]
+# # TODO: implement a nearest neighbour peak filtering
+# # Temporary way: only fix wrist array
+# peaks["wrist"]=peaks["wrist"][2:]
 
-# Add peaks to smoothed derivative plot
-for key in derivatives: 
-    ax[1].scatter(peaks[key], derivatives[key][peaks[key]], marker ='x')
+# # Add peaks to smoothed derivative plot
+# for key in derivatives: 
+#     ax[1].scatter(peaks[key], derivatives[key][peaks[key]], marker ='x')
 
-wrist_chest=peaks["wrist"]-peaks["chest"]
-head_chest= peaks["head"]- peaks["chest"]
-ankle_chest = peaks["ankle"]- peaks["chest"]
+# wrist_chest=peaks["wrist"]-peaks["chest"]
+# head_chest= peaks["head"]- peaks["chest"]
+# print(head_chest)
+# ankle_chest = peaks["ankle"]- peaks["chest"]
 
-wirst_shift = int(wrist_chest.mean())
-head_shift = int(head_chest.mean())
-ankle_shift = int(ankle_chest.mean())
+# wirst_shift = int(wrist_chest.mean())
+# head_shift = int(head_chest.mean())
+# ankle_shift = int(ankle_chest.mean())
 
-# Print Answer to 1.2
+# Other method: Take a portion of data at the beginning and compare the number of samples in each log 
+# We choose a limit close to the beginning of the trip to minimise the offset from drift
+pressue_limit =8500000
+x_limit = 200000
+
+ind_chest = np.array(np.where(data["chest"][:x_limit]>pressue_limit)).reshape((-1,1))
+ind_ankle = np.array(np.where(data["ankle"][:x_limit]>pressue_limit)).reshape((-1,1))
+ind_head = np.array(np.where(data["head"][:x_limit]>pressue_limit)).reshape((-1,1))
+ind_wrist = np.array(np.where(data["wrist"][:x_limit]>pressue_limit)).reshape((-1,1))
+
+head_shift = int(ind_head[-1]-ind_chest[-1] )
+ankle_shift = int(ind_ankle[-1] -ind_chest[-1]) 
+wirst_shift = int(ind_wrist[-1] -ind_chest[-1] )
+
 print("-----------")
-print("Question 1.2 : Samples removed from the beginning of:")
+print("Question 1.2 : Method 1: Samples removed from the beginning of:")
 print("-----------")
-print("Wirst sensor:",wirst_shift)
+print("Wrist sensor:",wirst_shift)
 print("Head sensor:", head_shift)
 print("Ankle sensor:", ankle_shift)
 
@@ -134,13 +150,54 @@ ax[2].plot(temp_ankle, label="ankle")
 ax[2].legend(loc='lower right')
 ax[2].set_title("Synced data")
 
+
 ##################################################
 ##                QUESTION 1.3                  ##
 ##################################################
 
+# We know the elevator takes 25s to travel 108m (Jungfrau.ch website)
+# We also know from observation which peaks in the data correspond to teh elevator rides
+
+# Number of samples corresponding to the elevator rides: 
+threshold_down_1= up_there[1,0]
+threshold_up = up_there[2,0]
+threshold_down_2 = up_there[3,0]
+
+n_samples=[]
+# Elevator ride up
+idx= np.array(np.where(data["chest"][133750:135000]<= (threshold_down_1-3000))).reshape((-1,1))
+idx= idx + 133750 
+elevator_start1=idx[0]
+ax[2].scatter(idx[0],data["chest"][idx[0]], marker='o')
+
+idx= np.array(np.where(data["chest"][133750:135000] >=(threshold_up+5000))).reshape((-1,1))
+idx= idx + 133750 
+elevator_end1=idx[-1]
+ax[2].scatter(idx[-1],data["chest"][idx[-1]], marker='o')
+
+n_samples = elevator_end1-elevator_start1
+sampling = (n_samples/25.0)*0.5
+
+# Elevator ride down
+idx= np.array(np.where(data["chest"][210000:211000]<= (threshold_down_2-5000))).reshape((-1,1))
+idx= idx + 210000 
+elevator_end2=idx[-1]
+ax[2].scatter(idx[-1],data["chest"][idx[-1]], marker='o')
+
+idx= np.array(np.where(data["chest"][210000:211000] >=(threshold_up+4200))).reshape((-1,1))
+idx= idx + 210000
+elevator_start2=idx[0]
+ax[2].scatter(idx[0],data["chest"][idx[0]], marker='o')
+
+n_samples= elevator_end2-elevator_start2
+sampling += (n_samples/25.0)*0.5
+
 print("-----------")
 print("Question 1.3 :")
 print("-----------")
+print(f"sampling rate is: %.2f Hz" %sampling)
+
+
 
 ##################################################
 ##                QUESTION 2.1                  ##
@@ -165,7 +222,7 @@ print(f"The subject visited Jungfraujoch on %d december" %reference_pressure[ind
 
 plt.savefig('plot.png')
 # plt.tight_layout()
-# plt.show()
+plt.show()
 
 
 

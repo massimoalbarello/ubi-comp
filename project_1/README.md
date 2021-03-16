@@ -57,6 +57,10 @@ python3 task1.py
 
 > TODO: right now I am manually matching the peaks, but if we have a better peak matching system like nearest neighbours, then we can allow for more peaks and get a more representative average. 
 
+**Idea 2** MUCH EASIER!
+* Consider a section of the data closer to the start of the trip 
+* Select a pressure threshold in the section where the gradient is non zero: the number of samples above that threshold will
+be different for each sensor, it's equal to the shift we are trying to correct. 
 
 ## Question 3:
 
@@ -68,3 +72,26 @@ python3 task1.py
 * The sensor sampling rate should be a multiple of this frequency
 
 **Idea 1**: 
+
+* Find 2 points we know the location and travel time of:
+* From the graph and the elevator drop we know that the small steps while the subject is at the peak correspond to the elevator ride:
+    * from the [website](https://www.jungfrau.ch/en-gb/jungfraujoch-top-of-europe/sphinx-observation-deck/) we know the elevator does 108m in 25s
+    * Find the number of samples in the 25 seconds going up and down and average the sampling rate accross
+
+|Location|Altitude| Pressure (est.) |
+|:---:|:---:|:----:|
+|Eigergleicher|2320m|~700-750 hPa|
+|Kleine scheidegg|2061 m||
+|Wengen |1274m||
+|Grindelwald|1034m||
+|Lauterbrunnen|802m||
+|Stechelberg|910m||
+
+* Check on the graph the smoothed first derivative graph when he is taking transportation (non-zero): sample time is (number of samples/20min*60s)
+Grin-Eiger: 14850/20*60 = 12.15
+Eiger-Jungfrau: 19040/26*60 = 12.2
+Eiger-Grin = 12050/20*60 = 10.14
+
+tentative answer 10-12Hz
+
+
