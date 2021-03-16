@@ -9,7 +9,7 @@ def displayData(data, lineV, lineH):
     for index in lineV:
         plt.axvline(x=index, color='black', linestyle='dotted')
     for height in lineH:
-        plt.axhline(y=height, color='r', linestyle='-')    # Jungfraujoch has air pressure around 660 hPa
+        plt.axhline(y=height, color='black', linestyle='-')    # Jungfraujoch has air pressure around 660 hPa
     plt.show()
 
 def derivate(data, dx):

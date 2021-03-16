@@ -4,7 +4,8 @@ import numpy as np
 
 dataFrom = 'ex1_data.dict.npy'
 rawData = np.load(dataFrom, allow_pickle=True).item()
-# utils.displayData(rawData)
+lineH = [6600000, ]     # the air pressure at the top of Jungfraujoch is around 660 hPa
+utils.displayData(rawData, [], lineH)
 
 
 
@@ -15,7 +16,7 @@ rawData = np.load(dataFrom, allow_pickle=True).item()
 dx = 1000
 der = utils.derivate(rawData, dx)
 
-lineV = [95, 300]
+lineV = [95, 300]   # first and last index of the interval for the stay at Jungfraujoch (660 hPa)
 lineH = []
 utils.displayData(der, lineV, lineH)
 for key in der:
@@ -71,3 +72,16 @@ for i in range(3):
 print('The average displacement between wrist and chest measurements is: {0:4.3f} with a standard deviation of: {1:4.3f}'.format(avg[0], std[0]))
 print('The average displacement between head and chest measurements is: {0:4.3f} with a standard deviation of: {1:4.3f}'.format(avg[1], std[1]))
 print('The average displacement between ankle and chest measurements is: {0:4.3f} with a standard deviation of: {1:4.3f}'.format(avg[2], std[2]))
+print()
+
+
+### Task 1.3 ###
+
+# calculating the sample rate by dividing the number of samples during the way down from 
+# Jungfraujoch to Eigergletscher by the time of the ride (26 minutes)
+utils.displayData(rawData, [300720, 318700], [])
+samples = 318700 - 300720
+timeRide = 26 * 60
+
+rate = samples / timeRide
+print('The sample rate is: {0:4.3f} samples per second'.format(rate))
