@@ -30,9 +30,7 @@ print()
 # calculate the displacement of the sensors using the one in the chest as reference
 # the displacement is calculated by averaging the index displacements at different heights (air pressure values)
 # due to the noisy measures it is best to calculate the displacements only where the height changes significantly
-thresh1 = np.linspace(9000000, 6600000, 100)
-thresh2 = np.linspace(6570000, 9000000, 100)
-thresholds = np.concatenate((thresh1, thresh2))
+thresholds = np.linspace(9000000, 8500000, 100)
 index = {}
 for key in rawData:
     index[key] = 0
