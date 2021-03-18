@@ -177,6 +177,7 @@ ax[2].scatter(idx[-1],data["chest"][idx[-1]], marker='o')
 
 n_samples = elevator_end1-elevator_start1
 sampling = (n_samples/25.0)*0.5
+print(n_samples/25.0)
 
 # Elevator ride down
 idx= np.array(np.where(data["chest"][210000:211000]<= (threshold_down_2-5000))).reshape((-1,1))
@@ -190,6 +191,7 @@ elevator_start2=idx[0]
 ax[2].scatter(idx[0],data["chest"][idx[0]], marker='o')
 
 n_samples= elevator_end2-elevator_start2
+print(n_samples/25.0)
 sampling += (n_samples/25.0)*0.5
 
 print("-----------")
