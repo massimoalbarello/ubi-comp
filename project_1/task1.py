@@ -11,9 +11,11 @@
 # ---------------------
 
 
+
 import matplotlib.pyplot as plt
 import numpy as np
 from scipy.signal import butter, lfilter, freqz, find_peaks
+
 
 
 ### Parameters ###
@@ -78,6 +80,8 @@ for key in data:
 ax[0].legend(loc='lower right')
 ax[0].set_title("Raw data")
 
+
+
 ### Task 1.1 ###
 
 #  Find the shortest sensor log and its number of samples, to represent the total length of the day trip
@@ -105,6 +109,7 @@ plateau = find_plateaux(data[shortest_log], derivatives[shortest_log])
 # tourist pressure to have an air pressure ~ 10 hPa higher
 
 reference = 6606000.0 + 100000.0
+ax[1].axhline(y=reference, color='black', linestyle='-', label='Reference')
 
 Jungfrau_duration = 0 
 up_there =np.zeros((0,1))
@@ -130,6 +135,8 @@ print("Duration at Jungfraujoch:", int(Jungfrau_duration))
 print()
 print(f"Portion of trip spent in Jungfraujoch: %.1f %%" % time_up_there )
 print()
+
+
 
 ### Task 1.2 ###
 
@@ -203,12 +210,13 @@ ax[1].plot(temp_ankle, label="ankle")
 ax[1].legend(loc='lower right')
 ax[1].set_title("Synced data")
 
+
+
 ### Task 1.3 ###
 
 # We find the number of samples in intervals we know the diration of
 # We choose the bounds of these intervals based on visual inspection
 # And average the rates calculated from these intervals to get the sample rate
-
 
 # # Jungfraujoch to Eigergletscher: (26 minutes) - source: SBB schedule
 # add_lines(ax[1], [300720, 318700, 134097,134412, 210316, 210657], [])
@@ -216,14 +224,12 @@ ax[1].set_title("Synced data")
 # timeRide = 26 * 60
 # rate[0,0] = samples / timeRide
 
-
 add_lines(ax[1], [134097,134412, 210316, 210657], [], "Intervals for sample rate")
 ax[1].legend(loc='lower right')
 # Elevator ride up (25s) - source Jungfrau.ch website
 samples = 134412 - 134097
 timeRide = 25
 rate1= samples / timeRide
-
 
 # Elevator ride down (25s)
 samples = 210657 - 210316
@@ -241,6 +247,7 @@ print("Rates obtained by visual inspection: {:.2f} , {:.2f}".format(rate1,rate2)
 print()
 print(f'The sample rate is: %.2f Hz'% avg_rate)
 print()
+
 
 
 plt.show()
