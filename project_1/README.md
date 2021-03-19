@@ -1,6 +1,5 @@
 # Answers
 
-``` 
 TASK 1 - RESULTS
 -----------
 Question 1:
@@ -10,6 +9,7 @@ Total duration: 451008
 Duration at Jungfraujoch: 206956
 
 Portion of trip spent in Jungfraujoch: 45.9 %
+
 -----------
 Question 2:
 -----------
@@ -23,11 +23,10 @@ Wrist signal: 54
 Head signal: 149
 Ankle signal: 167
 Chest signal: 0
+
 -----------
 Question 3:
 -----------
-Rates obtained by visual inspection: 12.60 , 13.64
+Rates obtained by visual inspection: 12.60 , 13.64, 12.49
 
-The sample rate is: 13.12 Hz
-```
-
+The sample rate is: 12.91 Hz
