@@ -106,7 +106,7 @@ plateau = find_plateaux(data[shortest_log], derivatives[shortest_log])
 
 # We pick the highest air pressure measured between 01.12.2020 and 23.12.2020: 660.6 hPa
 # The air pressure is measured at 3571m but the tourist area is at 3,463 m: we expect the 
-# tourist pressure to have an air pressure ~ 10 hPa higher
+# tourist area to have an air pressure ~ 10 hPa higher
 
 reference = 6606000.0 + 100000.0
 ax[1].axhline(y=reference, color='black', linestyle='-', label='Reference')
