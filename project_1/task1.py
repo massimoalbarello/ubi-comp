@@ -214,18 +214,13 @@ ax[1].set_title("Synced data")
 
 ### Task 1.3 ###
 
-# We find the number of samples in intervals we know the diration of
+# We find the number of samples in intervals we know the duration of
 # We choose the bounds of these intervals based on visual inspection
 # And average the rates calculated from these intervals to get the sample rate
 
-# # Jungfraujoch to Eigergletscher: (26 minutes) - source: SBB schedule
-# add_lines(ax[1], [300720, 318700, 134097,134412, 210316, 210657], [])
-# samples = 318700 - 300720
-# timeRide = 26 * 60
-# rate[0,0] = samples / timeRide
-
-add_lines(ax[1], [134097,134412, 210316, 210657], [], "Intervals for sample rate")
+add_lines(ax[1], [300720, 318700, 134097,134412, 210316, 210657], [], "Intervals for sample rate")
 ax[1].legend(loc='lower right')
+
 # Elevator ride up (25s) - source Jungfrau.ch website
 samples = 134412 - 134097
 timeRide = 25
@@ -236,14 +231,19 @@ samples = 210657 - 210316
 timeRide = 25
 rate2 = samples / timeRide
 
-avg_rate = (rate1+rate2)/2
+# Jungfraujoch to Eigergletscher: (24 minutes) - source: SBB schedule
+samples = 318700 - 300720
+timeRide = 24 * 60
+rate3 = samples / timeRide
+
+avg_rate = (rate1+rate2+rate3)/3
 
 # Print Answer  
 print("-----------")
 print("Question 3:")
 print("-----------")
 
-print("Rates obtained by visual inspection: {:.2f} , {:.2f}".format(rate1,rate2))
+print("Rates obtained by visual inspection: {:.2f} , {:.2f}, {:.2f}".format(rate1,rate2, rate3))
 print()
 print(f'The sample rate is: %.2f Hz'% avg_rate)
 print()
