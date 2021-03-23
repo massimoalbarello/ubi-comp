@@ -1,5 +1,6 @@
 # Answers
 
+## Task 1 - Submission
 ``` 
 TASK 1 - RESULTS
 -----------
@@ -26,8 +27,25 @@ Chest signal: 0
 -----------
 Question 3:
 -----------
-Rates obtained by visual inspection: 12.60 , 13.64
+Rates obtained by visual inspection: 12.60 , 13.64, 12.49
 
-The sample rate is: 13.12 Hz
+The sample rate is: 12.91 Hz
+
 ```
+## Task 1 - Solutions
+
+* Samples removed from each trace to synchronize:
+    * chest: 0
+    * wrist: 56
+    * ankle: 174
+    * head: 119
+
+* Sampling frequency of the sensors: 13.7 Hz
+
+## Task 2 - Submission
+
+
+## Task 2 - Solutions
+
+
 
