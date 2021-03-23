@@ -1,54 +1,89 @@
 #!/usr/bin/env python3
 #
-# Project: Ubiquitous Computing Exercise 1
-#
+# Project: Ubiquitous Computing Project 1
+# 
 # Authors: 
 #   - Rayan Armani [rarmani@ethz.ch]
+#   - Massimo Albarello [malbarello@ethz.ch]
 #     
 #
 # References:
 # ---------------------
 
-import numpy as np
-import matplotlib.pyplot as plt
-import utils
 
-# First derivative smoothing parameters
+import matplotlib.pyplot as plt
+import numpy as np
+from scipy.signal import butter, lfilter, freqz, find_peaks
+
+
+
+### Parameters ###
+
+# Filtering
 cutoff = 1000
 fs = 300000
 
-# Data fmeasured at 3571 m
-reference_pressure=np.genfromtxt('jungfraujoch_pressure.csv',
-                           dtype=float,
-                           delimiter=',',
-                           skip_header=1)
 
-# Load data
-# .item() is needed as np.load() returns a structured array that needs
-# to be converted back to a dict. File should be in same location as code.
+
+### Utils ###
+
+def add_lines(fig, lineV, lineH, label):
+
+    for index in lineV:
+        fig.axvline(x=index, color='black', linestyle='dotted', label=label)
+    for height in lineH:
+        fig.axhline(y=height, color='black', linestyle='-', label=label)
+
+# Smoothing  and low pass filering 
+def butter_lowpass_filter(data, cutoff, fs, order=5):
+    nyq = 0.5 * fs
+    normal_cutoff = cutoff / nyq
+    b, a = butter(order, normal_cutoff, btype='low', analog=False)
+    y = lfilter(b, a, data)
+    return y
+
+def find_plateaux(signal,derivative):
+    '''
+    finds flat reagions between signal peaks
+    '''
+    threshold = 1000
+    height= [10,600]
+    distance = 100
+    prominence = 80
+   
+    peaks = np.zeros((0,1))
+    positive_peaks, __ = find_peaks(derivative,height= height, distance=distance, prominence= prominence)
+    negative_peaks, __ = find_peaks(-derivative,height= height, distance = distance, prominence= prominence)
+    peaks=np.append(positive_peaks,negative_peaks)
+    peaks=np.sort(peaks)
+    
+    start=0
+    end=0
+    average=0
+    
+    plateau=np.zeros((0,3))
+    for i in range(len(peaks)-1):
+        if peaks[i+1]-peaks[i] > threshold:
+            start = peaks[i]
+            end = peaks[i+1]
+            average=np.average(signal[peaks[i]:peaks[i+1]])
+
+            plateau= np.vstack((plateau,[start, end, average]))
+    return plateau
+
 data = np.load("ex1_data.dict.npy", allow_pickle=True).item() 
-
-fig,ax=plt.subplots(nrows=3,ncols=1,figsize=(10, 6), sharex=True)
+fig,ax=plt.subplots(nrows=2,ncols=1,figsize=(10, 6), sharex=True)
 
 for key in data:
     ax[0].plot(data[key], label=key)
 ax[0].legend(loc='lower right')
 ax[0].set_title("Raw data")
 
-# Compute and plot smoothed gradient
-derivatives={}
-for key in data:
-    derivatives[key]= utils.butter_lowpass_filter(np.gradient(data[key]), cutoff, fs)
-    ax[1].plot(derivatives[key], label = key)
-ax[1].set_ylim([-1000, 1000])
-ax[1].set_title("Smoothed first derivative")
-ax[1].legend(loc='lower right')
 
-##################################################
-##                QUESTION 1.1                  ##
-##################################################
 
-# Define 100% as the length of the shortest sensor data log
+### Task 1.1 ###
+
+#  Find the shortest sensor log and its number of samples, to represent the total length of the day trip
 log_length = {}
 data_keys = data.keys()
 
@@ -57,174 +92,161 @@ for key in data_keys:
 
 shortest_log, total_duration =  min(log_length.items())
 
-# Find plateaux on the smoothed gradient
+# Compute and smooth the first derivative of the signals
+derivatives={}
+for key in data:
+    derivatives[key]= butter_lowpass_filter(np.gradient(data[key]), cutoff, fs)
+
+# Find plateaux (prolonged stay at the same altitude) on the smoothed gradient
 # Plateau array: start peak, end peak, average pressure 
-points , plateau = utils.find_plateaux(data[shortest_log], derivatives[shortest_log])
+plateau = find_plateaux(data[shortest_log], derivatives[shortest_log])
 
-# Choose threshold from plateau: highest value of air pressure measured in the time interval
-# The air pressure is measured at 3571m but the tourist area is at 3,463 m 
-# so we need to add a buffer to account for these 100m.
-# From the data the difference between the lowest plateau and the other ones is ~100000
+# Find a reasonable threshold below which we can assume the visitor is in Jungfraujoch: 
 
-reference = np.amax(reference_pressure[:,1]) + 100000.0
+# We pick the highest air pressure measured between 01.12.2020 and 23.12.2020: 660.6 hPa
+# The air pressure is measured at 3571m but the tourist area is at 3,463 m: we expect the 
+# tourist area to have an air pressure ~ 10 hPa higher
+
+reference = 6606000.0 + 100000.0
+ax[1].axhline(y=reference, color='black', linestyle='-', label='Reference')
+
 Jungfrau_duration = 0 
 up_there =np.zeros((0,1))
 for start, end, average in plateau:
     if average<reference:
         Jungfrau_duration += end - start
-        # Show selected segments on the synced plot
-        ax[2].plot(start, average, marker='|', markersize= 12, color ='k')
-        ax[2].plot(np.arange(start, end), np.ones((int(end-start)))*(average-100000),linestyle="dashed", color = 'k' , label = "At Jungfrau" )
-        ax[2].plot(end, average, marker='|', markersize= 12, color ='k')
 
-        up_there=np.vstack((up_there, average))
+        # Show selected segments on the synced plot
+        ax[1].plot(start, average, marker='|', markersize= 12, color ='k')
+        ax[1].plot(np.arange(start, end), np.ones((int(end-start)))*(average-100000),linestyle="dashed", color = 'k' , label = "At Jungfrau" )
+        ax[1].plot(end, average, marker='|', markersize= 12, color ='k')
 
 time_up_there= 100.0 * Jungfrau_duration/total_duration
 
-# Print Answer to 
+# Print Answer 
+print("TASK 1 - RESULTS")
 print("-----------")
-print("Question 1.1:")
+print("Question 1:")
 print("-----------")
 print("Shortest sensor log:", shortest_log)
 print("Total duration:", total_duration)
-print("Duration at Jungfrau:", int(Jungfrau_duration))
-print(f"Portion of trip spent in Jungfrau: %.2f %%" % time_up_there )
+print("Duration at Jungfraujoch:", int(Jungfrau_duration))
+print()
+print(f"Portion of trip spent in Jungfraujoch: %.1f %%" % time_up_there )
+print()
 
-##################################################
-##                QUESTION 1.2                  ##
-##################################################
 
-# # Find peaks on the smoothed gradient
-# peaks={}
-# for key in derivatives: 
-#     peaks[key]=  utils.sorted_peaks(derivatives[key])
 
-# # TODO: implement a nearest neighbour peak filtering
-# # Temporary way: only fix wrist array
-# peaks["wrist"]=peaks["wrist"][2:]
+### Task 1.2 ###
 
-# # Add peaks to smoothed derivative plot
-# for key in derivatives: 
-#     ax[1].scatter(peaks[key], derivatives[key][peaks[key]], marker ='x')
+# From visual observation, the chest sensors is the one turned on last
+# calculate the displacement of the sensors using the one in the chest as reference
+# the displacement is calculated by averaging the index displacements at different heights (air pressure values)
+# due to the noisy measures it is best to calculate the displacements only where the height changes significantly
+# in order not to have displacement due to drift, we decided to calculate the average displament over a small interval
+# at the beginning of the most significant pressure drop
 
-# wrist_chest=peaks["wrist"]-peaks["chest"]
-# head_chest= peaks["head"]- peaks["chest"]
-# print(head_chest)
-# ankle_chest = peaks["ankle"]- peaks["chest"]
+thresholds = np.linspace(9000000, 8500000, 100)
+index = {}
+for key in data:
+    index[key] = 0
+displacement = {}
+for i in range(3):
+    displacement[i] = []
+avg = {}
+std = {}
+for threshold in thresholds:
+    for key in data:
+        if data[key][index[key]] > threshold:
+            while data[key][index[key]] > threshold:
+                index[key] += 1
+        else:
+            while data[key][index[key]] < threshold:
+                index[key] += 1
 
-# wirst_shift = int(wrist_chest.mean())
-# head_shift = int(head_chest.mean())
-# ankle_shift = int(ankle_chest.mean())
+    # due to noise the displacement might change a lot in some points
+    # to prevent this, as the diplacement between adjacent signals is normally "small", we decided to limit it at 200
+    if abs(index['wrist'] - index['chest']) < 200 and abs(index['head'] - index['wrist']) < 200 and abs(index['ankle'] - index['head']) < 200:
+        # using the chest signal as a reference
+        displacement[0].append(index['wrist'] - index['chest'])
+        displacement[1].append(index['head'] - index['chest'])
+        displacement[2].append(index['ankle'] - index['chest'])
 
-# Other method: Take a portion of data at the beginning and compare the number of samples in each log 
-# We choose a limit close to the beginning of the trip to minimise the offset from drift
-pressue_limit =8500000
-x_limit = 200000
+for i in range(3):
+    avg[i] = np.mean(displacement[i])
+    std[i] = np.std(displacement[i])
 
-ind_chest = np.array(np.where(data["chest"][:x_limit]>pressue_limit)).reshape((-1,1))
-ind_ankle = np.array(np.where(data["ankle"][:x_limit]>pressue_limit)).reshape((-1,1))
-ind_head = np.array(np.where(data["head"][:x_limit]>pressue_limit)).reshape((-1,1))
-ind_wrist = np.array(np.where(data["wrist"][:x_limit]>pressue_limit)).reshape((-1,1))
-
-head_shift = int(ind_head[-1]-ind_chest[-1] )
-ankle_shift = int(ind_ankle[-1] -ind_chest[-1]) 
-wirst_shift = int(ind_wrist[-1] -ind_chest[-1] )
-
+# Print Answer  
 print("-----------")
-print("Question 1.2 : Method 1: Samples removed from the beginning of:")
+print("Question 2:")
 print("-----------")
-print("Wrist sensor:",wirst_shift)
-print("Head sensor:", head_shift)
-print("Ankle sensor:", ankle_shift)
+
+print('The average displacement between:')
+print('wrist and chest measurements is: {0:4.3f} with a standard deviation of: {1:4.3f}'.format(avg[0], std[0]))
+print('head and chest measurements is: {0:4.3f} with a standard deviation of: {1:4.3f}'.format(avg[1], std[1]))
+print('ankle and chest measurements is: {0:4.3f} with a standard deviation of: {1:4.3f}'.format(avg[2], std[2]))
+print()
+
+print("Points removed from:")
+print(f"Wrist signal: %d" %avg[0])
+print(f"Head signal: %d" %avg[1])
+print(f"Ankle signal: %d" %avg[2])
+print("Chest signal: 0")
+print()
+
+
 
 # Adjust the sensor data with respect to chest sensor 
-temp_ankle=data["ankle"][ankle_shift:]
-temp_head=data["head"][head_shift:]
-temp_wrist=data["wrist"][wirst_shift:]
+temp_wrist=data["wrist"][int(avg[0]):]
+temp_head=data["head"][int(avg[1]):]
+temp_ankle=data["ankle"][int(avg[2]):]
 
 # Plot Adjusted data
-ax[2].plot(data["chest"], label="chest")
-ax[2].plot(temp_head, label="head")
-ax[2].plot(temp_wrist, label="wirst")
-ax[2].plot(temp_ankle, label="ankle")
-ax[2].legend(loc='lower right')
-ax[2].set_title("Synced data")
+ax[1].plot(data["chest"], label="chest")
+ax[1].plot(temp_head, label="head")
+ax[1].plot(temp_wrist, label="wirst")
+ax[1].plot(temp_ankle, label="ankle")
+ax[1].legend(loc='lower right')
+ax[1].set_title("Synced data")
 
 
-##################################################
-##                QUESTION 1.3                  ##
-##################################################
 
-# We know the elevator takes 25s to travel 108m (Jungfrau.ch website)
-# We also know from observation which peaks in the data correspond to teh elevator rides
+### Task 1.3 ###
 
-# Number of samples corresponding to the elevator rides: 
-threshold_down_1= up_there[1,0]
-threshold_up = up_there[2,0]
-threshold_down_2 = up_there[3,0]
+# We find the number of samples in intervals we know the duration of
+# We choose the bounds of these intervals based on visual inspection
+# And average the rates calculated from these intervals to get the sample rate
 
-n_samples=[]
-# Elevator ride up
-idx= np.array(np.where(data["chest"][133750:135000]<= (threshold_down_1-3000))).reshape((-1,1))
-idx= idx + 133750 
-elevator_start1=idx[0]
-ax[2].scatter(idx[0],data["chest"][idx[0]], marker='o')
+add_lines(ax[1], [300720, 318700, 134097,134412, 210316, 210657], [], "Intervals for sample rate")
+ax[1].legend(loc='lower right')
 
-idx= np.array(np.where(data["chest"][133750:135000] >=(threshold_up+5000))).reshape((-1,1))
-idx= idx + 133750 
-elevator_end1=idx[-1]
-ax[2].scatter(idx[-1],data["chest"][idx[-1]], marker='o')
+# Elevator ride up (25s) - source Jungfrau.ch website
+samples = 134412 - 134097
+timeRide = 25
+rate1= samples / timeRide
 
-n_samples = elevator_end1-elevator_start1
-sampling = (n_samples/25.0)*0.5
-print(n_samples/25.0)
+# Elevator ride down (25s)
+samples = 210657 - 210316
+timeRide = 25
+rate2 = samples / timeRide
 
-# Elevator ride down
-idx= np.array(np.where(data["chest"][210000:211000]<= (threshold_down_2-5000))).reshape((-1,1))
-idx= idx + 210000 
-elevator_end2=idx[-1]
-ax[2].scatter(idx[-1],data["chest"][idx[-1]], marker='o')
+# Jungfraujoch to Eigergletscher: (24 minutes) - source: SBB schedule
+samples = 318700 - 300720
+timeRide = 24 * 60
+rate3 = samples / timeRide
 
-idx= np.array(np.where(data["chest"][210000:211000] >=(threshold_up+4200))).reshape((-1,1))
-idx= idx + 210000
-elevator_start2=idx[0]
-ax[2].scatter(idx[0],data["chest"][idx[0]], marker='o')
+avg_rate = (rate1+rate2+rate3)/3
 
-n_samples= elevator_end2-elevator_start2
-print(n_samples/25.0)
-sampling += (n_samples/25.0)*0.5
-
+# Print Answer  
 print("-----------")
-print("Question 1.3 :")
+print("Question 3:")
 print("-----------")
-print(f"sampling rate is: %.2f Hz" %sampling)
+
+print("Rates obtained by visual inspection: {:.2f} , {:.2f}, {:.2f}".format(rate1,rate2, rate3))
+print()
+print(f'The sample rate is: %.2f Hz'% avg_rate)
+print()
 
 
 
-##################################################
-##                QUESTION 2.1                  ##
-##################################################
-
-# The pressure at the Observatory is the closest to the pressure measured by official authorities
-# In our case it is the average of the the lowest plateau across all sensors
-pressure_at_observatory =0
-for key in data:
-    points , plateau = utils.find_plateaux(data[key], derivatives[key])
-    pressure_at_observatory += np.amin(plateau[:,2])/4.0
-
-# find nearest neighbour in reference array 
-index = (np.abs(reference_pressure[:,1]-pressure_at_observatory)).argmin()
-
-print("-----------")
-print("Question 2.1 :")
-print("-----------")
-print(f"Average pressure at observatory: %.2f " % pressure_at_observatory)
-print(f"Nearest reference pressure: %.2f" %  reference_pressure[index,1] )
-print(f"The subject visited Jungfraujoch on %d december" %reference_pressure[index,0])
-
-plt.savefig('plot.png')
-# plt.tight_layout()
 plt.show()
-
-
-

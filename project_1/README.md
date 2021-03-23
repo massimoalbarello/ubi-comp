@@ -1,97 +1,32 @@
-# Project 1
+# Answers
 
-## Task 1
-
-```
+``` 
+TASK 1 - RESULTS
 -----------
-Question 1.1:
+Question 1:
 -----------
 Shortest sensor log: ankle
 Total duration: 451008
-Duration at Jungfrau: 206956
-Portion of trip spent in Jungfrau: 45.89 %
+Duration at Jungfraujoch: 206956
+
+Portion of trip spent in Jungfraujoch: 45.9 %
 -----------
-Question 1.2 : Samples removed from the beginning of:
+Question 2:
 -----------
-Wirst sensor: 51
-Head sensor: 120
-Ankle sensor: 173
+The average displacement between:
+wrist and chest measurements is: 54.470 with a standard deviation of: 3.754
+head and chest measurements is: 149.590 with a standard deviation of: 12.239
+ankle and chest measurements is: 167.700 with a standard deviation of: 8.707
+
+Points removed from:
+Wrist signal: 54
+Head signal: 149
+Ankle signal: 167
+Chest signal: 0
+-----------
+Question 3:
+-----------
+Rates obtained by visual inspection: 12.60 , 13.64, 12.49
+
+The sample rate is: 12.91 Hz
 ```
-
-![plot](plot.png)
-
-## How to run
-
-``` bash
-cd /project_1
-python3 task1.py
-```
-
-## Question 1: 
-
-**Objective**: Find percentage of the total recorded time did the subject spend at Jungfraujoch (time between arrival and departure)? You may use the length of the shortest data trace as base value for 100%.
-
-**Observation**:
-* From research: the maximum air pressure at Jungfraujoch during 01.12.2020 to 23.01.2020 is: 
-
-**Idea 1**: 
-* Thresholding approach: the subject it at Jungfraujoch as long as the air pressure is below a certain value.
-* Assume regions of steep change correspond to transportation, the subject will be at Jungfraujoch when air pressure data shows long periods of being at a constant low value
-* Method: Find plateaux on the signal and select those with an average value below the reference threshold. Find the percentage by dividing the total selected length to the shortest sensor data length
-
-## Question 2:
-
-**Objective**: There is a misalignment between the data traces. Shorten the traces to match the device that was turned on last so that samples of all devices are synchronous by array index. Do this as precisely as possible.
-
-**Obesrvation**:
-* From the data plots, we know that the order in which the devices were turned on is: Ankle, Head, Writst, Chest.
-
-**Idea 1**:
-* The shift between signals is most obvious when the change in pressure is high
-* Get the first derivative of the signal
-* Smooth it with a low pass filter
-* Find peaks in the smoothed first derivative of the 4 sensors 
-* Match the peaks across signals (TODO)
-* Find the x-distance between the ```"chest"``` sensor peaks and the other sensors
-* The signal shift from ```chest``` is the average of the shifts across all the peaks
-
-> TODO: right now I am manually matching the peaks, but if we have a better peak matching system like nearest neighbours, then we can allow for more peaks and get a more representative average. 
-
-**Idea 2** MUCH EASIER!
-* Consider a section of the data closer to the start of the trip 
-* Select a pressure threshold in the section where the gradient is non zero: the number of samples above that threshold will
-be different for each sensor, it's equal to the shift we are trying to correct. 
-
-## Question 3:
-
-**Objective**: find the sampling rate of the sensor
-
-**Observation**: 
-* [ECS-.327-7-16-C-TR](https://www.digikey.com/en/products/detail/ecs-inc/ECS-327-7-16-C-TR/9597476): 	
-32.768kHz ±10ppm
-* The sensor sampling rate should be a multiple of this frequency
-
-**Idea 1**: 
-
-* Find 2 points we know the location and travel time of:
-* From the graph and the elevator drop we know that the small steps while the subject is at the peak correspond to the elevator ride:
-    * from the [website](https://www.jungfrau.ch/en-gb/jungfraujoch-top-of-europe/sphinx-observation-deck/) we know the elevator does 108m in 25s
-    * Find the number of samples in the 25 seconds going up and down and average the sampling rate accross
-
-|Location|Altitude| Pressure (est.) |
-|:---:|:---:|:----:|
-|Eigergleicher|2320m|~700-750 hPa|
-|Kleine scheidegg|2061 m||
-|Wengen |1274m||
-|Grindelwald|1034m||
-|Lauterbrunnen|802m||
-|Stechelberg|910m||
-
-* Check on the graph the smoothed first derivative graph when he is taking transportation (non-zero): sample time is (number of samples/20min*60s)
-Grin-Eiger: 14850/20*60 = 12.15
-Eiger-Jungfrau: 19040/26*60 = 12.2
-Eiger-Grin = 12050/20*60 = 10.14
-
-tentative answer 10-12Hz
-
-
