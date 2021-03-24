@@ -109,6 +109,9 @@ time1=((t1[1]-t1[0])/13.7)/60 #in minutes
 pressure1= average_in_time_window(synced_data, t1[0], t1[1])
 estimated_altitude.append(pvlib.atmosphere.pres2alt(pressure1/100.0))
 print("start flat 1: \t pressure: {0:.3f} \t minutes: {1:.3f} \t estimated alt:{2:.2f} m".format(pressure1, time1, estimated_altitude[0]))
+# expand sample based on the time spent at that altitude
+for t in range(round(time1)):
+    estimated_altitude.append(pvlib.atmosphere.pres2alt(pressure1/100.0))
 
 # start flat 2
 t2=[38970, 57760]
@@ -116,6 +119,9 @@ time2=((t2[1]-t2[0])/13.7)/60 #in minutes
 pressure2= average_in_time_window(synced_data, t2[0], t2[1])
 estimated_altitude.append(pvlib.atmosphere.pres2alt(pressure2/100.0))
 print("start flat2: \t pressure: {0:.3f} \t minutes: {1:.3f}  \t estimated alt:{2:.2f} m".format(pressure2, time2, estimated_altitude[1]))
+# expand sample based on the time spent at that altitude
+for t in range(round(time2)):
+    estimated_altitude.append(pvlib.atmosphere.pres2alt(pressure2/100.0))
 
 # first leg of ascent 
 t3=[55761,71996]
@@ -128,6 +134,9 @@ time4=((t4[1]-t4[0])/13.7)/60 #in minutes
 pressure4 = average_in_time_window(synced_data, t4[0], t4[1])
 estimated_altitude.append(pvlib.atmosphere.pres2alt(pressure4/100.0))
 print("Stop 1: \t pressure: {0:.3f} \t minutes: {1:.3f} \t estimated alt:{2:.2f} m".format(pressure4, time4, estimated_altitude[2]))
+# expand sample based on the time spent at that altitude
+for t in range(round(time4)):
+    estimated_altitude.append(pvlib.atmosphere.pres2alt(pressure4/100.0))
 
 # second leg of ascent 
 t5=[76563,95000]
@@ -152,6 +161,9 @@ time7=((t7[1]-t7[0])/13.7)/60 #in minutes
 pressure7 = average_in_time_window(synced_data, t7[0], t7[1])
 estimated_altitude.append(pvlib.atmosphere.pres2alt(pressure7/100.0))
 print("Stop 2: \t pressure: {0:.3f} \t minutes: {1:.3f} \t estimated alt:{2:.2f} m ".format(pressure7, time7, estimated_altitude[5]))
+# expand sample based on the time spent at that altitude
+for t in range(round(time7)):
+    estimated_altitude.append(pvlib.atmosphere.pres2alt(pressure7/100.0))
 
 # seconf leg of descent
 t8 = [324262,335586]
@@ -163,6 +175,9 @@ time9=((t9[1]-t9[0])/13.7)/60 #in minutes
 pressure9 = average_in_time_window(synced_data, t9[0], t9[1])
 estimated_altitude.append(pvlib.atmosphere.pres2alt(pressure9/100.0))
 print("Stop 3: \t pressure: {0:.3f} \t minutes: {1:.3f} \t estimated alt:{2:.2f} m".format(pressure9, time9, estimated_altitude[6]))
+# expand sample based on the time spent at that altitude
+for t in range(round(time9)):
+    estimated_altitude.append(pvlib.atmosphere.pres2alt(pressure9/100.0))
 
 # noisy interval 1 after stop 3
 t10 = [360840,364230]
@@ -170,6 +185,9 @@ time10=((t10[1]-t10[0])/13.7)/60 #in minutes
 pressure10 = average_in_time_window(synced_data, t10[0], t10[1])
 estimated_altitude.append(pvlib.atmosphere.pres2alt(pressure10/100.0))
 print("Noisy 1: \t pressure: {0:.3f} \t minutes: {1:.3f} \t estimated alt:{2:.2f} m".format(pressure10, time10, estimated_altitude[7]))
+# expand sample based on the time spent at that altitude
+for t in range(round(time10)):
+    estimated_altitude.append(pvlib.atmosphere.pres2alt(pressure10/100.0))
 
 # noisy interval 2 after stop 3
 t11 = [366430,369730]
@@ -177,6 +195,9 @@ time11=((t11[1]-t11[0])/13.7)/60 #in minutes
 pressure11 = average_in_time_window(synced_data, t11[0], t11[1])
 estimated_altitude.append(pvlib.atmosphere.pres2alt(pressure11/100.0))
 print("Noisy 2: \t pressure: {0:.3f} \t minutes: {1:.3f} \t estimated alt:{2:.2f} m".format(pressure11, time11, estimated_altitude[8]))
+# expand sample based on the time spent at that altitude
+for t in range(round(time11)):
+    estimated_altitude.append(pvlib.atmosphere.pres2alt(pressure11/100.0))
 
 # noisy interval 3 after stop 3
 t12 = [372180,374280]
@@ -184,6 +205,9 @@ time12=((t12[1]-t12[0])/13.7)/60 #in minutes
 pressure12 = average_in_time_window(synced_data, t12[0], t12[1])
 estimated_altitude.append(pvlib.atmosphere.pres2alt(pressure12/100.0))
 print("Noisy 3: \t pressure: {0:.3f} \t minutes: {1:.3f} \t estimated alt:{2:.2f} m".format(pressure12, time12, estimated_altitude[9]))
+# expand sample based on the time spent at that altitude
+for t in range(round(time12)):
+    estimated_altitude.append(pvlib.atmosphere.pres2alt(pressure12/100.0))
 
 # tip at index 381126
 pressure13 = average_in_time_window(synced_data, 381125, 381127)
@@ -196,6 +220,9 @@ time14=((t14[1]-t14[0])/13.7)/60 #in minutes
 pressure14 = average_in_time_window(synced_data, t14[0], t14[1])
 estimated_altitude.append(pvlib.atmosphere.pres2alt(pressure14/100.0))
 print("Noisy 4: \t pressure: {0:.3f} \t minutes: {1:.3f} \t estimated alt:{2:.2f} m".format(pressure14, time14, estimated_altitude[11]))
+# expand sample based on the time spent at that altitude
+for t in range(round(time14)):
+    estimated_altitude.append(pvlib.atmosphere.pres2alt(pressure14/100.0))
 
 # tip at index 425930
 pressure15 = average_in_time_window(synced_data, 425920, 525940)
@@ -208,6 +235,9 @@ time16=((t16[1]-t16[0])/13.7)/60 #in minutes
 pressure16 = average_in_time_window(synced_data, t16[0], t16[1])
 estimated_altitude.append(pvlib.atmosphere.pres2alt(pressure16/100.0))
 print("Noisy 5: \t pressure: {0:.3f} \t minutes: {1:.3f} \t estimated alt:{2:.2f} m".format(pressure16, time16, estimated_altitude[13]))
+# expand sample based on the time spent at that altitude
+for t in range(round(time16)):
+    estimated_altitude.append(pvlib.atmosphere.pres2alt(pressure16/100.0))
 
 # Plot altitude data
 plt.figure(figsize=(6, 3))
