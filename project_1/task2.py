@@ -58,15 +58,17 @@ reference_pressure = np.array([
 # Python Dict that contains the pressure data at the 16th of December at the cities that the subject could have passed by 
 
 # key = name , data 1 = altitude[m]
-places = {  "JungfrauJoch": [3463, pvlib.atmosphere.alt2pres(3463)],
-            "Top of Europe": [3572, pvlib.atmosphere.alt2pres(3572)],
-            "Eigergletscher": [2320, pvlib.atmosphere.alt2pres(2320)],
+places = { "Eigergletscher": [2320, pvlib.atmosphere.alt2pres(2320)],
             "Kl_Scheidegg": [2061, pvlib.atmosphere.alt2pres(2061)],
             "Wengen     ": [1274, pvlib.atmosphere.alt2pres(1274)],
             "Grindelwald":[ 1034, pvlib.atmosphere.alt2pres(1034)],
             "Lauterbrunnen": [802, pvlib.atmosphere.alt2pres(802)],
             "Stechelberg":[ 910, pvlib.atmosphere.alt2pres(910)],
-            "Interlaken": [566,pvlib.atmosphere.alt2pres(556)]
+            "Interlaken": [566,pvlib.atmosphere.alt2pres(556)],
+            "Luzern   ":[766, pvlib.atmosphere.alt2pres(766)],
+            "Zurich   ":[148,pvlib.atmosphere.alt2pres(148)],
+            "Basel   ":[256, pvlib.atmosphere.alt2pres(256)],
+            "Bern   ": [532,pvlib.atmosphere.alt2pres(532)]           
             }
 
 
