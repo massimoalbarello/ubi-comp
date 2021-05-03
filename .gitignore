@@ -1,2 +1,5 @@
 # vscode files
 .vscode
+
+# large raw data files
+ex2_recordings
