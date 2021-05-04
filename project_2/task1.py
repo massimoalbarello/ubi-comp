@@ -1,7 +1,8 @@
 import pickle
 import numpy as np
-from scipy import signal, fft
+from scipy import signal, fft, stats
 import matplotlib.pyplot as plt
+import pandas as pd
 
 with open("./ex2_recordings/participant_01.pkl", "rb") as f:
     participant_1_data = pickle.load(f)
@@ -10,13 +11,28 @@ with open("./ex2_recordings/participant_01.pkl", "rb") as f:
 
 ###### Utils ######
 
-def butter_lowpass_filter(data, cutoff, fs, order):
+def butter_filter(data, cutoff, fType, fs, order):
     nyq = fs / 2
     normal_cutoff = cutoff / nyq
     # Get the filter coefficients 
-    b, a = signal.butter(order, normal_cutoff, btype='low', analog=False)
+    b, a = signal.butter(order, normal_cutoff, btype=fType, analog=False)
     y = signal.filtfilt(b, a, data)
     return y
+
+
+def statisticalMeasurements(values, name):
+    mean = np.mean(values)
+    stdev = np.std(values)
+    skewness = stats.skew(values)
+    kurtosis = stats.kurtosis(values)
+    print("The {} values have: \nmean: {:.2f}\nstandard deviation: {:.2f}\nskewness: {:.2f}\nkurtosis: {:.2f}".format(name, mean, stdev, skewness, kurtosis))
+
+    tot = len(peaks)
+    count = 0
+    for value in values:
+        if value < mean - stdev or value > mean + stdev:
+            count += 1
+    print('The percentage of times the {} is more than a standard deviation away from the mean is: {:.2f}%'.format(name, count/tot))
 
 
 
@@ -37,6 +53,7 @@ fsECG_1 = participant_1_data["FS_ECG"]
 
 # time duration of the signal
 duration = n / fsECG_1
+# print("The duration of the ECG signal is: {} seconds.".format(duration))
 
 # plotting the power specral density for the right hand of the first participant's ECG signal while watching clip 1
 f, Pxx_den = signal.welch(rightHandECG_1, fsECG_1)  # any idea on how to set nperseg ???
@@ -64,17 +81,85 @@ plt.xlabel('frequency [Hz]')
 plt.show()
 
 # filtering the signal with a lowpass butterworth filter
-cutoff = 1  # how much should we set it ???
-y = butter_lowpass_filter(rightHandECG_1, cutoff, fs=fsECG_1, order=2)
+cutoff = 0.05  # remove DC component
+filteredSignal = butter_filter(rightHandECG_1, cutoff, 'high', fs=fsECG_1, order=2)
+cutoff = 40     # remove muscle noise component
+filteredSignal = butter_filter(filteredSignal, cutoff, 'low', fs=fsECG_1, order=2)
+
 
 # plotting f the original and the filtered signal in the time domain
 offset = t[0]
 for i in range(len(t)):
     t[i] = round(t[i] - offset)
 
+
 plt.plot(t, rightHandECG_1, label='original ECG signal')
-plt.plot(t, y, label='filtered ECG signal')
+plt.plot(t, filteredSignal, label='filtered ECG signal')
 plt.legend(loc='lower right')
 plt.xlabel('time [ms]')
 plt.ylabel('ECG signal')
 plt.show()
+
+
+
+###### Task 1.1.4 ######
+
+offset_recordings = []
+i = 0
+for sample in participant_1_data["recordings"][1]["ECG"]:
+    time = round(sample[0] - offset)
+    tmp = [time, filteredSignal[i], sample[2]]
+    offset_recordings.append(tmp)
+    i += 1
+    
+endtime = offset_recordings[-1][0]
+time = offset_recordings[0][0]
+index = 0   # index of the first sample in the last 50 seconds of the recording
+while time < endtime - 50000:    
+    index += 1
+    time = offset_recordings[index][0]
+# print(index)
+# print(time)
+
+last50sec = offset_recordings[index:]
+
+# space the samples in the last 50 seconds of the recording so that we can then calculate the inter beat interval in seconds
+# in the 'samples' array each index corresponds tp 1 ms
+samples = []
+i = 0
+lastSample = last50sec[i]
+for sample in last50sec[1:]:
+    inter = 1
+    samples.append(sample[1])
+    while inter < sample[0] - lastSample[0]:
+        samples.append(0)    # fake value used only to extend the array so that two adjacent samples have the real distance in time
+        inter += 1
+    i += 1
+    lastSample = last50sec[i]
+
+peaks, _ = signal.find_peaks(samples, distance=600)
+# print(peaks)
+plt.plot(samples)
+for i in peaks:
+    plt.axvline(i, ymin=0.6, ymax=0.8, color='r')
+# plt.plot(peaks, samples[peaks], "x")
+plt.show()
+
+interBeatInter = np.diff(peaks)     # time difference in ms between adjacent heart beats
+# print(interBeatInter)
+statisticalMeasurements(interBeatInter, 'inter beat interval')
+
+heartRateVar = np.diff(interBeatInter)  # time difference in ms between two adjacent inter beat intervals
+# print(heartRateVar)
+statisticalMeasurements(heartRateVar, 'heart rate variability')
+
+
+# using moving average to calculate "local" heart rate
+window_size = 5     #averaging over 5 inter beat inetervals
+numbers_series = pd.Series(1/interBeatInter*1000)
+windows = numbers_series.rolling(window_size)
+moving_averages = windows.mean()
+moving_averages_list = moving_averages.tolist()
+heartRate= moving_averages_list[window_size - 1:]
+# print(heartRate)
+statisticalMeasurements(heartRate, 'heart rate')
