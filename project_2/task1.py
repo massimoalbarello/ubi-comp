@@ -1,38 +1,12 @@
 import pickle
 import numpy as np
-from scipy import signal, fft, stats
+from scipy import signal, fft
 import matplotlib.pyplot as plt
 import pandas as pd
+import utils
 
 with open("./ex2_recordings/participant_01.pkl", "rb") as f:
     participant_1_data = pickle.load(f)
-
-
-
-###### Utils ######
-
-def butter_filter(data, cutoff, fType, fs, order):
-    nyq = fs / 2
-    normal_cutoff = cutoff / nyq
-    # Get the filter coefficients 
-    b, a = signal.butter(order, normal_cutoff, btype=fType, analog=False)
-    y = signal.filtfilt(b, a, data)
-    return y
-
-
-def statisticalMeasurements(values, name):
-    mean = np.mean(values)
-    stdev = np.std(values)
-    skewness = stats.skew(values)
-    kurtosis = stats.kurtosis(values)
-    print("\nThe {} values have: \nmean: {:.2f}\nstandard deviation: {:.2f}\nskewness: {:.2f}\nkurtosis: {:.2f}".format(name, mean, stdev, skewness, kurtosis))
-
-    tot = len(values)
-    count = 0
-    for value in values:
-        if value < mean - stdev or value > mean + stdev:
-            count += 1
-    print('The percentage of times the {} is more than a standard deviation away from the mean is: {:.2f}%'.format(name, count/tot))
 
 
 
@@ -80,9 +54,9 @@ plt.show()
 
 # filtering the signal with a butterworth filter
 cutoff = 0.05  # remove DC component
-filteredSignal = butter_filter(rightHandECG_1, cutoff, 'high', fs=fsECG_1, order=2)
+filteredSignal = utils.butter_filter(rightHandECG_1, cutoff, 'high', fs=fsECG_1, order=2)
 cutoff = 40     # remove muscle noise component over 40 Hz
-filteredSignal = butter_filter(filteredSignal, cutoff, 'low', fs=fsECG_1, order=2)
+filteredSignal = utils.butter_filter(filteredSignal, cutoff, 'low', fs=fsECG_1, order=2)
 
 # plotting f the original and the filtered signal in the time domain
 offset = participant_1_data["recordings"][1]["ECG"][0][0]
@@ -140,11 +114,11 @@ plt.show()
 
 interBeatInter = np.diff(peaks)     # time difference in ms between adjacent heart beats
 # print(interBeatInter)
-statisticalMeasurements(interBeatInter, 'inter beat interval')
+utils.statisticalMeasurements(interBeatInter, 'inter beat interval')
 
 heartRateVar = np.diff(interBeatInter)  # time difference in ms between two adjacent inter beat intervals
 # print(heartRateVar)
-statisticalMeasurements(heartRateVar, 'heart rate variability')
+utils.statisticalMeasurements(heartRateVar, 'heart rate variability')
 
 # using moving average to calculate "local" heart rate
 window_size = 5     #averaging over 5 inter beat inetervals
@@ -154,5 +128,5 @@ moving_averages = windows.mean()
 moving_averages_list = moving_averages.tolist()
 heartRate= moving_averages_list[window_size - 1:]
 # print(heartRate)
-statisticalMeasurements(heartRate, 'heart rate')
+utils.statisticalMeasurements(heartRate, 'heart rate')
 
