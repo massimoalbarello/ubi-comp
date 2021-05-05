@@ -25,9 +25,9 @@ def statisticalMeasurements(values, name):
     stdev = np.std(values)
     skewness = stats.skew(values)
     kurtosis = stats.kurtosis(values)
-    print("The {} values have: \nmean: {:.2f}\nstandard deviation: {:.2f}\nskewness: {:.2f}\nkurtosis: {:.2f}".format(name, mean, stdev, skewness, kurtosis))
+    print("\nThe {} values have: \nmean: {:.2f}\nstandard deviation: {:.2f}\nskewness: {:.2f}\nkurtosis: {:.2f}".format(name, mean, stdev, skewness, kurtosis))
 
-    tot = len(peaks)
+    tot = len(values)
     count = 0
     for value in values:
         if value < mean - stdev or value > mean + stdev:
@@ -40,9 +40,7 @@ def statisticalMeasurements(values, name):
 
 # construct array of right hand's ECG signal samples for participant 1 watching clip 1
 rightHandECG_1 = []
-t = []
 for sample in participant_1_data["recordings"][1]["ECG"]:
-    t.append(sample[0])
     rightHandECG_1.append(sample[1])
 
 # number of samples in our signal
@@ -80,18 +78,24 @@ plt.title('FFT of the ECG signal')
 plt.xlabel('frequency [Hz]')
 plt.show()
 
-# filtering the signal with a lowpass butterworth filter
+# filtering the signal with a butterworth filter
 cutoff = 0.05  # remove DC component
 filteredSignal = butter_filter(rightHandECG_1, cutoff, 'high', fs=fsECG_1, order=2)
-cutoff = 40     # remove muscle noise component
+cutoff = 40     # remove muscle noise component over 40 Hz
 filteredSignal = butter_filter(filteredSignal, cutoff, 'low', fs=fsECG_1, order=2)
 
-
 # plotting f the original and the filtered signal in the time domain
-offset = t[0]
-for i in range(len(t)):
-    t[i] = round(t[i] - offset)
+offset = participant_1_data["recordings"][1]["ECG"][0][0]
+i = 0
+offset_recordings = []
+for sample in participant_1_data["recordings"][1]["ECG"]:
+    time = round(sample[0] - offset)
+    offset_recordings.append([time, filteredSignal[i], sample[2]])
+    i += 1
 
+t = []
+for sample in offset_recordings:
+    t.append(sample[0])
 
 plt.plot(t, rightHandECG_1, label='original ECG signal')
 plt.plot(t, filteredSignal, label='filtered ECG signal')
@@ -103,14 +107,6 @@ plt.show()
 
 
 ###### Task 1.1.4 ######
-
-offset_recordings = []
-i = 0
-for sample in participant_1_data["recordings"][1]["ECG"]:
-    time = round(sample[0] - offset)
-    tmp = [time, filteredSignal[i], sample[2]]
-    offset_recordings.append(tmp)
-    i += 1
     
 endtime = offset_recordings[-1][0]
 time = offset_recordings[0][0]
@@ -118,8 +114,6 @@ index = 0   # index of the first sample in the last 50 seconds of the recording
 while time < endtime - 50000:    
     index += 1
     time = offset_recordings[index][0]
-# print(index)
-# print(time)
 
 last50sec = offset_recordings[index:]
 
@@ -138,7 +132,6 @@ for sample in last50sec[1:]:
     lastSample = last50sec[i]
 
 peaks, _ = signal.find_peaks(samples, distance=600)
-# print(peaks)
 plt.plot(samples)
 for i in peaks:
     plt.axvline(i, ymin=0.6, ymax=0.8, color='r')
@@ -153,7 +146,6 @@ heartRateVar = np.diff(interBeatInter)  # time difference in ms between two adja
 # print(heartRateVar)
 statisticalMeasurements(heartRateVar, 'heart rate variability')
 
-
 # using moving average to calculate "local" heart rate
 window_size = 5     #averaging over 5 inter beat inetervals
 numbers_series = pd.Series(1/interBeatInter*1000)
@@ -163,3 +155,4 @@ moving_averages_list = moving_averages.tolist()
 heartRate= moving_averages_list[window_size - 1:]
 # print(heartRate)
 statisticalMeasurements(heartRate, 'heart rate')
+
