@@ -13,12 +13,12 @@ with open("./ex2_recordings/participant_01.pkl", "rb") as f:
 ###### Task 1.1.1 ######
 
 # construct array of right hand's ECG signal samples for participant 1 watching clip 1
-rightHandECG_1 = []
+lead1ECG = []
 for sample in participant_1_data["recordings"][1]["ECG"]:
-    rightHandECG_1.append(sample[1])
+    lead1ECG.append(sample[1] - sample[2])
 
 # number of samples in our signal
-n = len(rightHandECG_1)
+n = len(lead1ECG)
 
 # sampling frequency of participant 1 ECG
 fsECG_1 = participant_1_data["FS_ECG"]
@@ -28,7 +28,7 @@ duration = n / fsECG_1
 # print("The duration of the ECG signal is: {} seconds.".format(duration))
 
 # plotting the power specral density for the right hand of the first participant's ECG signal while watching clip 1
-f, Pxx_den = signal.welch(rightHandECG_1, fsECG_1)  # any idea on how to set nperseg ???
+f, Pxx_den = signal.welch(lead1ECG, fsECG_1)  # any idea on how to set nperseg ???
 # considering PSD within 0-40 Hz
 f = f[:41]
 Pxx_den = Pxx_den[:41]
@@ -45,7 +45,7 @@ plt.show()
 # http://ems12lead.com/2014/03/10/understanding-ecg-filtering/
 
 # plotting the FFT of the original signal
-fourierTransform = fft.fft(rightHandECG_1)
+fourierTransform = fft.fft(lead1ECG)
 xf = fft.fftfreq(n, 1/fsECG_1)   # number of sample of the FFT
 plt.semilogy(xf, np.abs(fourierTransform))
 plt.title('FFT of the ECG signal')
@@ -53,9 +53,9 @@ plt.xlabel('frequency [Hz]')
 plt.show()
 
 # filtering the signal with a butterworth filter
-cutoff = 0.05  # remove DC component
-filteredSignal = utils.butter_filter(rightHandECG_1, cutoff, 'high', fs=fsECG_1, order=2)
-cutoff = 40     # remove muscle noise component over 40 Hz
+cutoff = 2  # remove DC component
+filteredSignal = utils.butter_filter(lead1ECG, cutoff, 'high', fs=fsECG_1, order=2)
+cutoff = 20     # remove muscle noise component over 40 Hz
 filteredSignal = utils.butter_filter(filteredSignal, cutoff, 'low', fs=fsECG_1, order=2)
 
 # plotting f the original and the filtered signal in the time domain
@@ -71,7 +71,7 @@ t = []
 for sample in offset_recordings:
     t.append(sample[0])
 
-plt.plot(t, rightHandECG_1, label='original ECG signal')
+plt.plot(t, lead1ECG, label='original ECG signal')
 plt.plot(t, filteredSignal, label='filtered ECG signal')
 plt.legend(loc='lower right')
 plt.xlabel('time [ms]')
