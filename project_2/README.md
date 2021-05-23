@@ -1,5 +1,9 @@
 ## TODO
-* integrate other features in data and decide how to impute
-* test different imputation methods for EEG data 
-* tune classifier parameters to get better results
+* Add missing 5 features for ECG
+* Tune the classifer:
+    * Classifier parameters
+    * data imputation (mean, median, zero)
+    * top 10 features 
+    * comparison with ZeroR
 
+Write Report > Overleaf
