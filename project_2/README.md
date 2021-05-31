@@ -1,9 +1,5 @@
-## TODO
-* Add missing 5 features for ECG
-* Tune the classifer:
-    * Classifier parameters
-    * data imputation (mean, median, zero)
-    * top 10 features 
-    * comparison with ZeroR
+Knowledge of the emotional state of a user is key in affective computing, in order to create novel and improved user experiences. With this project we look into the use of physiological signals collected from commercial sensors to determine the level of valence and arousal of a person. The project focuses on data processing and feature extraction leading up to training a random forest (RF) classifier to perform the emotion recognition task.
 
-Write Report > Overleaf
+We used the ASCERTAIN Database which relates data from several sensors (electroencephalogram (EEG), electrodermal activity (EDA), electrocardiogram (ECG) and facial landmark trajectories (EMO) signal) to emotion self-ratings of valence and arousal of participants, collected after watching video clips meant to trigger different emotional responses. The sensors used for data collection are off-the-shelf and prone to noise and artifacts, meaning data has to be preprocessed before extracting features relevant to emotion recognition.
+
+A much more detailed explanation can be found in the file 'Final_Report.pdf'
